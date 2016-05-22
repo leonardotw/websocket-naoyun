@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>VivaGraphs test page</title>
+        <script src="./js/vivagraph/vivagraph.js"></script>
+        <script src="./js/wangnaoyun/main.js"></script>
+        <script src="./js/wangnaoyun/websocket.js"></script>
+        <script type='text/javascript'>
+            /*global Viva*/
+           function onLoad() {
+               var graph = Viva.Graph.graph();
+
+               var layout = Viva.Graph.Layout.forceDirected(graph, {
+                   springLength : 30,
+                   springCoeff : 0.001,
+                   dragCoeff : 0.05,
+                   gravity : -0.1
+               });
+
+               var graphics = Viva.Graph.View.svgGraphics();
+                graphics.node(function(node) {
+              // This time it's a group of elements: http://www.w3.org/TR/SVG/struct.html#Groups
+              var ui = Viva.Graph.svg('g'),
+                  // Create SVG text element with user id as content
+                  svgText = Viva.Graph.svg('text').attr('y', '-4px').text(node.id),
+                  img = Viva.Graph.svg('rect')
+                      .attr('width', node.data.width)
+                      .attr('height', node.data.height)
+                      .attr('fill', '#ef0000');
+
+              ui.append(svgText);
+              ui.append(img);
+              ui.data = node.data
+              return ui;
+            }).placeNode(function(nodeUI, pos) {
+                // 'g' element doesn't have convenient (x,y) attributes, instead
+                // we have to deal with transforms: http://www.w3.org/TR/SVG/coords.html#SVGGlobalTransformAttribute
+                nodeUI.attr('transform',
+                            'translate(' +
+                                  (pos.x - nodeUI.data.width/2) + ',' + (pos.y - nodeUI.data.height/2) +
+                            ')');
+            });
+
+               var renderer = Viva.Graph.View.renderer(graph, {
+                       layout     : layout,
+                       container  : document.getElementById('graphContainer'),
+                       graphics   : graphics
+                   });
+
+               for (var i = 0; i < 1; ++i) {
+                 graph.addNode(i, { width: (i + 1) * 2, height: (i + 1) * 2});
+               }
+
+               
+               renderer.run();
+
+              var wsm = new websocketmanager()
+              var open = function(f) {
+                  console.log("TEST")
+              };
+              var message = function(m){
+                
+                  var graph_data = JSON.parse(m['data']);
+
+                   if(graph_data['an'] != undefined) {
+                      for(node_id in graph_data['an']){
+                          node_data = graph_data['an'][node_id];
+                          try {
+                            graph.addNode(node_id, { width: (i + 1) * 2, height: (i + 1) * 2});
+                               }
+                          catch(err) {
+                           
+                          }
+                      }
+                   }
+                
+                   if(graph_data['ae'] != undefined) {
+                      for(edge_id in graph_data['ae']){
+                          edge_data = graph_data['ae'][edge_id];
+                          try {
+                            graph.addLink(edge_data['source'], edge_data['target']);
+                              
+                          }
+                          catch(err) {
+                           
+                          }
+                      
+                      }
+                   
+                    }
+                   /*graph.forEachNode(function(node){
+                     graph.addNode(node.id, { width: (node.links.length + 1) * 2, height: (node.links.length + 1) * 2});
+                });*/
+              }
+              wsm.start("ws://localhost:8765/ws",open,message);
+               
+
+               function createNodeUI(node){
+                  var ui = Viva.Graph.svg('rect')
+                      .attr('width', node.data.width)
+                      .attr('height', node.data.height)
+                      .attr('fill', '#ef0000');
+                       svgText = Viva.Graph.svg('text').attr('y', '-4px').text(node.id);
+                       ui.append(svgText);
+                  ui.data = node.data;
+
+                  var pos = layout.getNodePosition(node.id);
+                  placeNode(ui, pos);
+                  return ui;
+               }
+
+               function placeNode(nodeUI, pos) {
+                   nodeUI.attr('x', pos.x - nodeUI.data.width/2)
+                      .attr('y', pos.y - nodeUI.data.height/2);
+                }
+           }
+        </script>
+        <style type='text/css'>
+            #graphContainer {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+            }
+            body { overflow: hidden; }
+
+            #graphContainer > svg {
+                width: 100%;
+                height: 100%;
+            }
+ </style>
+</head>
+<body onload="onLoad()" style="background-color: white;">
+    <div id='graphContainer'></div>
+</body>
+</html>
