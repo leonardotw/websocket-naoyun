@@ -1,0 +1,152 @@
+<html>
+<head>
+  <script src="./js/linkurious/sigma.min.js"></script>
+  <script src="./js/linkurious/plugins.min.js"></script>
+  <script src="./js/linkurious/plugins/sigma.layouts.forceAtlas2.min.js"></script>
+  <script src="./js/wangnaoyun/main.js"></script>
+  <script src="./js/wangnaoyun/websocket.js"></script>
+  <style>
+  #graph-webgl-right{
+    width: 100%;
+    height: 90%;
+    margin-top:5%;
+    position: absolute;
+  }
+  h1 {
+    position: absolute;
+    margin: 0.5em;
+  }
+  </style>
+
+</head>
+<body>
+  <div style="background-color:#EEE;">WebSocket Stream network with Sigma.js / Linkurious.js</div>
+  <div id="container">
+
+    <div id="graph-webgl-right"></div>
+  </div>
+  <script>
+  /* Init app javascript - Helper for entity creation */
+  var naoyun = new naoyun();
+
+
+
+  /* Settings for Sigmajs */
+  var settings = {
+    nodeBorderSize: 2,
+    defaultNodeBorderColor: '#fff',
+    defaultNodeHoverBorderColor: '#fff',
+
+    nodeActiveColor: 'default',
+    nodeActiveBorderSize: 2,
+    defaultNodeActiveBorderColor: '#fff',
+    nodeActiveOuterBorderSize: 3,
+    nodeActiveBorderColor: 'default',
+    defaultNodeActiveOuterBorderColor: 'rgb(236, 81, 72)',
+
+    zoomMin: 0.001,
+    zoomMax: 3,
+
+  shortLabelsOnHover: true,    // enable the short label display mode
+  spriteSheetResolution: 2048, // resolution of the sprite sheet square
+  spriteSheetMaxSprites: 8     // number max of sprites
+};
+
+
+/* Create Sigmajs */
+var sigmaWebgl = new sigma({
+  renderer: {
+    container: document.getElementById('graph-webgl-right'),
+    type: 'webgl'
+  },
+  settings: settings
+});
+
+/* Ref to force atlas */
+var fa = undefined;
+
+/* Websocket Manager. Wraper to restart the websocket in case of connection close */
+var wsm = new websocketmanager()
+// Websocket On Open
+var open = function(f) {
+  console.log("Websocket Open")
+};
+// Websocket On Message
+var message = function(m){
+    // Parse the data to Json
+    var graph_data = JSON.parse(m['data']);
+    // If new node
+    if(graph_data['an'] != undefined) {
+      for(node_id in graph_data['an']){
+        node_data = graph_data['an'][node_id];
+        // Try / Catch needed for handling existing entity
+        try {
+          sigmaWebgl.graph.addNode(naoyun.createUser(node_id));
+        }
+        catch(err) {
+
+        }
+      }
+    }
+    // if add edge
+    if(graph_data['ae'] != undefined) {
+      for(edge_id in graph_data['ae']){
+        edge_data = graph_data['ae'][edge_id];
+
+        // Try / Catch needed for handling existing entity
+        try {
+          sigmaWebgl.graph.addEdge({
+            id : edge_id,
+            source : edge_data['source'],
+            target : edge_data['target'],
+            size: 1,
+            color: '#ccc',
+            active: false
+          })
+        }
+        catch(err) {
+
+        }
+        
+      }
+
+    }
+    /*
+    Tick to make it works. The problem sounds like the implementation keep only the 
+    initial nodes, even if new nodes / edges comes after.
+    */
+    if(fa==undefined){
+     fa = sigmaWebgl.startForceAtlas2({
+      iterationsPerRender :1000,
+                          //slowDown :100,
+                          linLogMode : true,
+                          scalingRatio:10
+                        }
+                        );
+   } else {
+    if(sigmaWebgl.isForceAtlas2Running()){
+     sigmaWebgl.killForceAtlas2();
+     sigmaWebgl.startForceAtlas2({
+
+      iterationsPerRender :1000,
+      linLogMode : true,
+      scalingRatio:10
+    });
+   }
+ }
+ // Automatic node size per degree
+ sigmaWebgl.graph.nodes().forEach(function(n) {
+  n.size = sigmaWebgl.graph.degree(n['id']);
+  });
+ // Display changes
+ sigmaWebgl.refresh({ skipIndexation: true });
+
+
+}
+// Start listening
+wsm.start("ws://localhost:8765/ws",open,message);
+
+</script>
+
+</body>
+</html>
