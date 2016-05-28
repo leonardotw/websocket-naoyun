@@ -3,7 +3,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>VivaGraphs test page</title>
-        <script src="./js/vivagraph/vivagraph.js"></script>
+        <script src="./js/vivagraph/vivagraph.min.js"></script>
         <script src="./js/wangnaoyun/main.js"></script>
         <script src="./js/wangnaoyun/websocket.js"></script>
         <script type='text/javascript'>
@@ -93,7 +93,7 @@
                      graph.addNode(node.id, { width: (node.links.length + 1) * 2, height: (node.links.length + 1) * 2});
                 });*/
               }
-              wsm.start("ws://localhost:8765/ws",open,message);
+              wsm.start("ws://localhost:8888/ws",open,message);
                
 
                function createNodeUI(node){

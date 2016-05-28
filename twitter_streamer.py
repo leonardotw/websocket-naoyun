@@ -21,12 +21,18 @@ except ImportError:
 import settings
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(settings.LOG_LEVEL)
 
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 
+if settings.LOG_FILE:
+    file_handler = RotatingFileHandler('twitter_streamer.log', 'a', 1000000, 1)
+    file_handler.setLevel(settings.LOG_LEVEL)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(settings.LOG_LEVEL)
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
@@ -77,8 +83,8 @@ if __name__ == '__main__':
     with open("streamquery.yml",'rb') as f:
         data = load(f, Loader=Loader)
     f.closed
-    redis_connection = redis.StrictRedis()
-    # redis_connection.publish('twitter', ["TEST"])
+    redis_connection = redis.StrictRedis(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT)
+
     l = UserGraph(redis_connection)
 
     auth = OAuthHandler(settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET)

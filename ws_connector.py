@@ -2,35 +2,37 @@
 # -*- coding: utf-8 -*-
 
 # Gateway Redis Pubsub to Websocket
-
-import logging
 from logging.handlers import RotatingFileHandler
-
-import tornado.httpserver
-import tornado.websocket
-import tornado.ioloop
-import tornado.web
+import json
+import logging
 import signal
 import socket
+
 import redis
-import json
+import tornado.httpserver
+import tornado.ioloop
+import tornado.web
+import tornado.websocket
+
+import settings
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(settings.LOG_LEVEL)
 
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-"""
-file_handler = RotatingFileHandler('activity.log', 'a', 1000000, 1)
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-"""
+
+if settings.LOG_FILE:
+    file_handler = RotatingFileHandler('ws_connector.log', 'a', 1000000, 1)
+    file_handler.setLevel(settings.LOG_LEVEL)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(settings.LOG_LEVEL)
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
-redis_pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
+redis_pool = redis.ConnectionPool(host=settings.REDIS_HOSTNAME, port=settings.REDIS_PORT, db=0)
 
 class Binder:
     def __init__(self,websocket,params):
@@ -65,7 +67,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 application = tornado.web.Application([
                                         (r'/ws', WSHandler),
                                       ], 
-                                      debug=True)
+                                      debug=settings.APPLICATION_DEBUG)
 application.clients = {}
 
 def sig_handler(sig, frame):
@@ -75,7 +77,7 @@ def sig_handler(sig, frame):
 
 if __name__ == '__main__':
     http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(8765)
+    http_server.listen(settings.WS_PORT)
 
     signal.signal(signal.SIGTERM, sig_handler)
     signal.signal(signal.SIGINT, sig_handler)
