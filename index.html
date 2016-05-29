@@ -125,6 +125,7 @@ var message = function(m){
                         );
    } else {
     if(sigmaWebgl.isForceAtlas2Running()){
+      console.log('Nodes :'+sigmaWebgl.graph.nodes().length+", Edges:"+sigmaWebgl.graph.edges().length);
      sigmaWebgl.killForceAtlas2();
      sigmaWebgl.startForceAtlas2({
 

@@ -3,28 +3,31 @@
 
     var websocketmanager = function(param){
         console.log('Websocket Manager Loaded')
+        var socket = undefined;
     }
+   
     this.websocketmanager = websocketmanager;
+    websocketmanager.prototype.socket = undefined;
     websocketmanager.prototype.start = function(url,custom_open,custom_message,custom_close,custom_error) {
-        var socket = new WebSocket(url);
+        this.socket = new WebSocket(url);
         var wsinstance = this;
-        socket.onopen = function(f){
+        this.socket.onopen = function(f){
             if(custom_open != undefined){
               custom_open(f);
             }
         }
-        socket.onmessage = function(m){
+        this.socket.onmessage = function(m){
             if(custom_message != undefined){
              custom_message(m);
             }
         }
-        socket.onclose = function(e){ 
+        this.socket.onclose = function(e){ 
             if(custom_close != undefined){
               custom_close(e);
             }
             wsinstance.start();
         }
-        socket.onerror = function(e){
+        this.socket.onerror = function(e){
             if(custom_error != undefined) {
               custom_error(e);
             }

@@ -1,0 +1,32 @@
+<html>
+
+<head>
+      <script src="./js/wangnaoyun/websocket.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        var remote_websocket = new websocketmanager();
+        var local_gephi = new websocketmanager();
+        local_gephi.start("ws://localhost:8080/workspace1");
+
+        function on_remote_open(a){};
+        function on_remote_message(m){
+            
+            var graph_data = JSON.parse(m.data);
+            local_gephi.socket.send(m.data);
+            console.log(graph_data)
+            /*console.log(JSON.stringify(graph_data['an']))
+            local_gephi.socket.send(JSON.stringify({"an":graph_data['an']}))
+            console.log(JSON.stringify(graph_data['ae']))
+            local_gephi.socket.send(JSON.stringify({'ae':graph_data['ae']}))*/
+
+        };
+        remote_websocket.start("ws://localhost:8888/ws",
+            on_remote_open,
+            on_remote_message);
+        
+    </script>
+</body>
+
+</html>
