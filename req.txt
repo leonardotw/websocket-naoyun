@@ -1,4 +1,4 @@
 tornado
 tweepy
 redis
-yaml
+pyyaml
