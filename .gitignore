@@ -2,3 +2,4 @@ streamquery.yml
 env/
 settings.py
 __pycache__
+twitter-auth.env

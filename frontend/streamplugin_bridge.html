@@ -22,7 +22,7 @@
             local_gephi.socket.send(JSON.stringify({'ae':graph_data['ae']}))*/
 
         };
-        remote_websocket.start("ws://localhost:8888/ws",
+        remote_websocket.start("ws://WS_HOST/ws",
             on_remote_open,
             on_remote_message);
         

@@ -1,0 +1,30 @@
+version: '2'
+services:
+  
+  twitter_streamer:
+    build: ./twitter_streamer
+    env_file:
+     - ./app.env
+     - ./twitter-auth.env
+    links:
+     - redis:redis
+  
+  ws_connector:
+    build: ./ws_connector
+    env_file:
+     - ./app.env
+    ports:
+     # - "${WS_PORT}:${WS_PORT}"
+     - "28888:8888"
+    links:
+     - redis:redis
+  
+  frontend:
+    build: ./frontend
+    env_file:
+     - ./app.env
+    ports:
+     - "29090:80" 
+    
+  redis:
+    image: redis

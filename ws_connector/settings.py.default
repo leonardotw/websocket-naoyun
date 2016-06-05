@@ -1,0 +1,12 @@
+import logging
+import os
+
+REDIS_HOSTNAME=os.getenv('REDIS_HOSTNAME', 'redis')
+REDIS_PORT=os.getenv('REDIS_PORT', 6379)
+
+WS_PORT=os.getenv('WS_PORT',8888)
+
+LOG_FILE=False
+LOG_LEVEL=logging.getLevelName(os.getenv('LOG_LEVEL','DEBUG'))
+
+APPLICATION_DEBUG=bool(os.getenv('APPLICATION_DEBUG',False))
