@@ -4,3 +4,4 @@ settings.py
 __pycache__
 twitter-auth.env
 app.env
+twitterstreamquery.yml

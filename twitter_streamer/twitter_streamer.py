@@ -43,7 +43,6 @@ class UserGraph(StreamListener):
         self.score = Counter()
         self.redis_connection = redis_connection
     def on_data(self, data):
-        logger.info(data)
         try:  
             status = json.loads(data)
             graph_add = {'ae':{},'an':{}}
@@ -69,8 +68,8 @@ class UserGraph(StreamListener):
             if "retweeted_status" in status.keys():
                 self.on_data(json.dumps(status['retweeted_status']))
         except Exception as e:
-            logger.info(e)
-            logger.info(data)
+            logger.error(e)
+            logger.error(data)
         return True
 
     def on_error(self, status):
@@ -92,4 +91,5 @@ if __name__ == '__main__':
 
 
     stream = Stream(auth, l)
+    logger.info('Starting tracking : {track}'.format(track=','.join(data['words'])))
     stream.filter(track=data['words'],async=True)

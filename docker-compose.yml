@@ -8,7 +8,8 @@ services:
      - ./twitter-auth.env
     links:
      - redis:redis
-  
+    volumes:
+     - ./twitterstreamquery.yml:/app/streamquery.yml
   ws_connector:
     build: ./ws_connector
     env_file:
